@@ -245,7 +245,7 @@ Template.game.onRendered(function () {
         }
       });
 
-      Meteor.call('giveKillCredit', executioner.playerId);
+      Meteor.call('giveKillCredit', executioner._id);
 
       return;
     }

@@ -11,6 +11,7 @@ Template.splash.onRendered(function () {
 
   setCLassHeight();
 
+  // focus the call to action once rendered
   $('#cto-button').focus();
 });
 

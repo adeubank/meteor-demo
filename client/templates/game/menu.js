@@ -9,6 +9,7 @@ Template.menu.onCreated(function () {
 });
 
 Template.menu.onRendered(function () {
+  // focus the call to action once rendered
   $('[name=player_name]').focus();
 });
 

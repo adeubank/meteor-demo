@@ -159,13 +159,9 @@ Template.game.onRendered(function () {
     board = self.find('canvas').getContext('2d');
     if (!_.isUndefined(gameLoop)) clearInterval(gameLoop);
     gameLoop = setInterval(paint, 75);
-
   }
 
   function paint() {
-
-    // look up our current player
-    var currentPlayer = Players.findOne(Session.get('currentPlayer'));
 
     // avoid the snake trail we need to paint the BG on every frame
     // lets paint the canvas now
@@ -173,19 +169,22 @@ Template.game.onRendered(function () {
     board.fillRect(0, 0, MAX_WIDTH, MAX_HEIGHT);
 
     // render the players
-    _.each(Players.find({
-      dead: false
-    }).fetch(), function (player) {
+    var playersAlive = Players.find({ dead: false }).fetch();
+    _.each(playersAlive, function (player) {
 
-      _.each(player.snakeParts, function (snakePart) {
+      var snakeParts = SnakeParts.findOne({ playerId: player._id });
 
+      if (!snakeParts || !snakeParts.snakeParts) {
+        return;
+      }
+
+      _.each(snakeParts.snakeParts, function (snakePart) {
         if (player._id === Session.get('currentPlayer'))
         // paint current players snake blue
           paintCell(snakePart.x, snakePart.y);
         else
         // paint other players red
           paintOtherPlayerCell(snakePart.x, snakePart.y);
-
       });
     });
 
@@ -194,8 +193,12 @@ Template.game.onRendered(function () {
       paintFoodCell(food.x, food.y);
     });
 
+        // look up our current player
+    var currentPlayer = Players.findOne(Session.get('currentPlayer'));
+    var currentPlayerSnakeParts = SnakeParts.findOne({ playerId: currentPlayer._id });
+
     // no current player, just return
-    if (!currentPlayer) {
+    if (!currentPlayer || !currentPlayerSnakeParts || !currentPlayerSnakeParts.snakeParts) {
       return;
     }
 
@@ -207,7 +210,7 @@ Template.game.onRendered(function () {
     // movement code for the snake to come here
     // logic is simple
     // pop out the tail cell and place it in front of the head cell
-    var snakeParts = currentPlayer.snakeParts;
+    var snakeParts = currentPlayerSnakeParts.snakeParts;
     var d = currentPlayer.direction;
     var nx = snakeParts[0].x;
     var ny = snakeParts[0].y;
@@ -232,21 +235,11 @@ Template.game.onRendered(function () {
       ny = (MAX_HEIGHT / CELL_WIDTH) - 1;
 
     // find all the other alive players
-    var otherPlayers = Players.find({
-      _id: {
-        $ne: currentPlayer._id
-      },
-      dead: false
-    }, {
-      fields: {
-        snakeParts: 1,
-        _id: 1
-      }
-    }).fetch();
+    var otherSnakeParts = SnakeParts.find({}).fetch();
 
     // check for any collisions with the other players
-    var executioner = _(otherPlayers).find(function (player) {
-      return checkCollision(nx, ny, player.snakeParts);
+    var executioner = _(otherSnakeParts).find(function (otherSnakePart) {
+      return checkCollision(nx, ny, otherSnakePart.snakeParts);
     });
 
     if (executioner) {
@@ -298,14 +291,11 @@ Template.game.onRendered(function () {
     snakeParts.unshift(tail); // puts the tail as the first cell
 
     // update this player's current position on the server
-    Players.update(currentPlayer._id, {
-      $set: {
-        snakeParts: snakeParts
-      }
-    }, function () {
+    Meteor.call('playerMoved', currentPlayer._id, snakeParts, function () {
       // update this players score
-      if (food)
+      if (food) {
         Meteor.call('playerScored', food);
+      }
     });
   }
 

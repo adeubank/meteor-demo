@@ -10,6 +10,8 @@ Template.splash.onRendered(function () {
   };
 
   setCLassHeight();
+
+  $('#cto-button').focus();
 });
 
 Template.splash.helpers({

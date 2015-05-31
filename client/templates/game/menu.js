@@ -8,6 +8,10 @@ Template.menu.onCreated(function () {
     Session.set('currentPlayer', existingPlayer._id);
 });
 
+Template.menu.onRendered(function () {
+  $('[name=player_name]').focus();
+});
+
 Template.menu.helpers({
   errorMessage: function (field) {
     return Session.get('menuSubmitErrors')[field];

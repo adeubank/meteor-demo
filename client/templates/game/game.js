@@ -134,11 +134,6 @@ Template.game.onCreated(function () {
       updateDirection("down");
       return false;
     }
-
-    // if player is not dead, just return false on any keys not caught
-    if (!currentPlayer.dead) {
-      return false;
-    }
   });
 });
 
@@ -250,7 +245,7 @@ Template.game.onRendered(function () {
         }
       });
 
-      Meteor.call('giveKillCredit', executioner._id);
+      Meteor.call('giveKillCredit', executioner.playerId);
 
       return;
     }

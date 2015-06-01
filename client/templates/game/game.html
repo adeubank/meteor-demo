@@ -13,21 +13,23 @@
                 {{#if currentPlayer.dead}}
                 <button class="btn btn-default" id="play_again">Play</button>
                 <p>{{gameMessage}}</p>
-                <p><small>You can also press spacebar to start the game</small></p>
+                  {{#if isDesktop}}
+                  <p><small>You can also press spacebar to start the game</small></p>
+                  {{else}}
+                  <p>Swipe the game board to control your snake</p>
+                  {{/if}}
                 {{/if}}
               {{/if}}
             </div>
           </div>
-          <div class="text-centercol-xs-2 col-sm-2 col-md-2 col-lg-2">
+          <div class="text-center col-xs-2 col-sm-2 col-md-2 col-lg-2">
             <h4>Current Score {{currentPlayer.score}}</h4>
           </div>
         </div>
       </div>
 
 
-      {{#unless isDesktop}}
-        Swipe the game board to control your snake
-      {{/unless}}
+
 
       {{#if displayScoreboard}}
         {{>scoreboard}}

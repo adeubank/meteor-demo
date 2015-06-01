@@ -248,6 +248,8 @@ Template.game.onRendered(function () {
         }
       });
 
+      console.log(currentPlayer.playerName, "died, killed by", executioner.playerName);
+
       Meteor.call('giveKillCredit', executioner._id);
 
       return;
@@ -255,6 +257,7 @@ Template.game.onRendered(function () {
 
     // check whether the current player collided with it's own snake
     if (checkCollision(nx, ny, snakeParts)) {
+      console.log(currentPlayer.playerName, "died, collision");
       Players.update(currentPlayer._id, {
         $set: {
           dead: true

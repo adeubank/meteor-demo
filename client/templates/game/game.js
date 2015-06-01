@@ -13,7 +13,10 @@ Template.game.helpers({
   },
   currentPlayer: function () {
     return Players.findOne(Session.get('currentPlayer'));
-  }
+  },
+  gameMessage: function () {
+    return Session.get('gameMessages');
+  },
 });
 
 var touchCoords;

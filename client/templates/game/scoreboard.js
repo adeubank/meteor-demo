@@ -32,9 +32,6 @@ Template.scoreboard.helpers({
       }
     });
   },
-  gameMessage: function () {
-    return Session.get('gameMessages');
-  },
   hallOfFame: function () {
     return HallOfFame.find({}, {
       sort: {

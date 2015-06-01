@@ -222,14 +222,14 @@ Template.game.onRendered(function () {
     else if (d == "down") ny++;
 
     // loop around if we hit a wall
-    if (nx >= MAX_WIDTH / CELL_WIDTH)
+    if (nx > (MAX_WIDTH / CELL_WIDTH) - 1)
       nx = 0;
-    else if (nx < -1)
+    else if (nx < 0)
       nx = (MAX_WIDTH / CELL_WIDTH) - 1;
 
-    if (ny >= MAX_HEIGHT / CELL_WIDTH)
+    if (ny > (MAX_HEIGHT / CELL_WIDTH) - 1)
       ny = 0;
-    else if (ny < -1)
+    else if (ny < 0)
       ny = (MAX_HEIGHT / CELL_WIDTH) - 1;
 
     // find all the other alive players

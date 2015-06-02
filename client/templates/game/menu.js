@@ -2,9 +2,15 @@
 
 Template.menu.onCreated(function () {
   Session.set('menuSubmitErrors', {});
+
   var existingPlayer = Players.findOne({ userId: Meteor.userId() });
   if (existingPlayer)
     Session.set('currentPlayer', existingPlayer._id);
+});
+
+Template.menu.onRendered(function () {
+  // focus the call to action once rendered
+  $('[name=player_name]').focus();
 });
 
 Template.menu.helpers({

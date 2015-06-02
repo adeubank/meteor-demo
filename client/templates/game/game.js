@@ -10,48 +10,13 @@ Template.game.helpers({
 
     // display the scoreboard on mobile screens only when the player is dead
     return currentPlayer.dead || (!currentPlayer.dead && !Meteor.Device.isPhone());
-  }
-});
-
-Template.scoreboard.helpers({
+  },
   currentPlayer: function () {
     return Players.findOne(Session.get('currentPlayer'));
-  },
-  leaders: function () {
-    return Players.find({
-      dead: false
-    }, {
-      sort: {
-        score: -1
-      },
-      fields: {
-        playerName: 1,
-        score: 1
-      }
-    });
-  },
-  players: function () {
-    return Players.find({
-      dead: false
-    }, {
-      sort: {
-        score: -1
-      }
-    });
   },
   gameMessage: function () {
     return Session.get('gameMessages');
   },
-  hallOfFame: function () {
-    return HallOfFame.find({}, {
-      sort: {
-        score: -1
-      }
-    }).map(function (player, index) {
-      player.rank = index + 1;
-      return player;
-    });
-  }
 });
 
 var touchCoords;
@@ -63,32 +28,33 @@ Template.game.events({
     });
     if (deadPlayer) {
       Meteor.call('resurrectPlayer', deadPlayer._id);
-    }
-    else {
+    } else {
       Router.go('menu');
     }
   },
 
   'touchstart #js-game-board': function (event, template) {
     var changedTouches = event.originalEvent.changedTouches[0];
-    touchCoords = { x: changedTouches.pageX, y: changedTouches.pageY };
+    touchCoords = {
+      x: changedTouches.pageX,
+      y: changedTouches.pageY
+    };
   },
 
   'touchmove #js-game-board': function (event) {
     event.preventDefault();
 
-   var changedTouches = event.originalEvent.changedTouches[0];
+    var changedTouches = event.originalEvent.changedTouches[0];
     var dX = changedTouches.pageX - touchCoords.x;
     var dY = changedTouches.pageY - touchCoords.y;
     var threshold = 50;
     var restraint = 25;
     var swipeDir;
 
-    if (Math.abs(dX) >= threshold && Math.abs(dY) <= restraint){ // 2nd condition for horizontal swipe met
-      swipeDir = (dX < 0)? 'left' : 'right'; // if dist traveled is negative, it indicates left swipe
-    }
-    else if (Math.abs(dY) >= threshold && Math.abs(dX) <= restraint){ // 2nd condition for vertical swipe met
-      swipeDir = (dY < 0)? 'up' : 'down'; // if dist traveled is negative, it indicates up swipe
+    if (Math.abs(dX) >= threshold && Math.abs(dY) <= restraint) { // 2nd condition for horizontal swipe met
+      swipeDir = (dX < 0) ? 'left' : 'right'; // if dist traveled is negative, it indicates left swipe
+    } else if (Math.abs(dY) >= threshold && Math.abs(dX) <= restraint) { // 2nd condition for vertical swipe met
+      swipeDir = (dY < 0) ? 'up' : 'down'; // if dist traveled is negative, it indicates up swipe
     }
 
     if (swipeDir) {
@@ -104,11 +70,10 @@ Template.game.events({
     var restraint = 25;
     var swipeDir;
 
-    if (Math.abs(dX) >= threshold && Math.abs(dY) <= restraint){ // 2nd condition for horizontal swipe met
-      swipeDir = (dX < 0)? 'left' : 'right'; // if dist traveled is negative, it indicates left swipe
-    }
-    else if (Math.abs(dY) >= threshold && Math.abs(dX) <= restraint){ // 2nd condition for vertical swipe met
-      swipeDir = (dY < 0)? 'up' : 'down'; // if dist traveled is negative, it indicates up swipe
+    if (Math.abs(dX) >= threshold && Math.abs(dY) <= restraint) { // 2nd condition for horizontal swipe met
+      swipeDir = (dX < 0) ? 'left' : 'right'; // if dist traveled is negative, it indicates left swipe
+    } else if (Math.abs(dY) >= threshold && Math.abs(dX) <= restraint) { // 2nd condition for vertical swipe met
+      swipeDir = (dY < 0) ? 'up' : 'down'; // if dist traveled is negative, it indicates up swipe
     }
 
     if (swipeDir) {
@@ -121,6 +86,7 @@ Template.game.onCreated(function () {
 
   // make sure we always have a player to start with
   if (!Players.findOne(Session.get('currentPlayer'))) {
+    Session.set('currentPlayer', '');
     Router.go('menu');
     return;
   }
@@ -149,38 +115,26 @@ Template.game.onCreated(function () {
     if (key == "37") {
       updateDirection("left");
       return false;
-    }
-    else if (key == "65") {
+    } else if (key == "65") {
       updateDirection("left");
       return false;
-    }
-    else if (key == "38") {
+    } else if (key == "38") {
       updateDirection("up");
       return false;
-    }
-    else if (key == "87") {
+    } else if (key == "87") {
       updateDirection("up");
       return false;
-    }
-    else if (key == "39") {
+    } else if (key == "39") {
       updateDirection("right");
       return false;
-    }
-    else if (key == "68") {
+    } else if (key == "68") {
       updateDirection("right");
       return false;
-    }
-    else if (key == "40") {
+    } else if (key == "40") {
       updateDirection("down");
       return false;
-    }
-    else if (key == "83") {
+    } else if (key == "83") {
       updateDirection("down");
-      return false;
-    }
-
-    // if player is not dead, just return false on any keys not caught
-    if (!currentPlayer.dead) {
       return false;
     }
   });
@@ -202,14 +156,10 @@ Template.game.onRendered(function () {
 
     board = self.find('canvas').getContext('2d');
     if (!_.isUndefined(gameLoop)) clearInterval(gameLoop);
-    gameLoop = setInterval(paint, 60);
-
+    gameLoop = setInterval(paint, 75);
   }
 
   function paint() {
-
-    // look up our current player
-    var currentPlayer = Players.findOne(Session.get('currentPlayer'));
 
     // avoid the snake trail we need to paint the BG on every frame
     // lets paint the canvas now
@@ -217,19 +167,22 @@ Template.game.onRendered(function () {
     board.fillRect(0, 0, MAX_WIDTH, MAX_HEIGHT);
 
     // render the players
-    _.each(Players.find({
-      dead: false
-    }).fetch(), function (player) {
+    var playersAlive = Players.find({ dead: false }).fetch();
+    _.each(playersAlive, function (player) {
 
-      _.each(player.snakeParts, function (snakePart) {
+      var snakeParts = SnakeParts.findOne({ playerId: player._id });
 
+      if (!snakeParts || !snakeParts.snakeParts) {
+        return;
+      }
+
+      _.each(snakeParts.snakeParts, function (snakePart) {
         if (player._id === Session.get('currentPlayer'))
-          // paint current players snake blue
+        // paint current players snake blue
           paintCell(snakePart.x, snakePart.y);
         else
-          // paint other players red
+        // paint other players red
           paintOtherPlayerCell(snakePart.x, snakePart.y);
-
       });
     });
 
@@ -238,8 +191,12 @@ Template.game.onRendered(function () {
       paintFoodCell(food.x, food.y);
     });
 
+        // look up our current player
+    var currentPlayer = Players.findOne(Session.get('currentPlayer'));
+    var currentPlayerSnakeParts = SnakeParts.findOne({ playerId: currentPlayer._id });
+
     // no current player, just return
-    if (!currentPlayer) {
+    if (!currentPlayer || !currentPlayerSnakeParts || !currentPlayerSnakeParts.snakeParts) {
       return;
     }
 
@@ -251,7 +208,7 @@ Template.game.onRendered(function () {
     // movement code for the snake to come here
     // logic is simple
     // pop out the tail cell and place it in front of the head cell
-    var snakeParts = currentPlayer.snakeParts;
+    var snakeParts = currentPlayerSnakeParts.snakeParts;
     var d = currentPlayer.direction;
     var nx = snakeParts[0].x;
     var ny = snakeParts[0].y;
@@ -265,32 +222,22 @@ Template.game.onRendered(function () {
     else if (d == "down") ny++;
 
     // loop around if we hit a wall
-    if (nx >= MAX_WIDTH / CELL_WIDTH)
+    if (nx > (MAX_WIDTH / CELL_WIDTH) - 1)
       nx = 0;
-    else if (nx < -1)
+    else if (nx < 0)
       nx = (MAX_WIDTH / CELL_WIDTH) - 1;
 
-    if (ny >= MAX_HEIGHT / CELL_WIDTH)
+    if (ny > (MAX_HEIGHT / CELL_WIDTH) - 1)
       ny = 0;
-    else if (ny < -1)
+    else if (ny < 0)
       ny = (MAX_HEIGHT / CELL_WIDTH) - 1;
 
     // find all the other alive players
-    var otherPlayers = Players.find({
-      _id: {
-        $ne: currentPlayer._id
-      },
-      dead: false
-    }, {
-      fields: {
-        snakeParts: 1,
-        _id: 1
-      }
-    }).fetch();
+    var otherSnakeParts = SnakeParts.find({}).fetch();
 
     // check for any collisions with the other players
-    var executioner = _(otherPlayers).find(function (player) {
-      return checkCollision(nx, ny, player.snakeParts);
+    var executioner = _(otherSnakeParts).find(function (otherSnakePart) {
+      return checkCollision(nx, ny, otherSnakePart.snakeParts);
     });
 
     if (executioner) {
@@ -301,6 +248,8 @@ Template.game.onRendered(function () {
         }
       });
 
+      console.log(currentPlayer.playerName, "died, killed by", executioner.playerName);
+
       Meteor.call('giveKillCredit', executioner._id);
 
       return;
@@ -308,6 +257,7 @@ Template.game.onRendered(function () {
 
     // check whether the current player collided with it's own snake
     if (checkCollision(nx, ny, snakeParts)) {
+      console.log(currentPlayer.playerName, "died, collision");
       Players.update(currentPlayer._id, {
         $set: {
           dead: true
@@ -332,8 +282,7 @@ Template.game.onRendered(function () {
         x: nx,
         y: ny
       };
-    }
-    else {
+    } else {
       tail = snakeParts.pop(); // pops out the last cell
       tail.x = nx;
       tail.y = ny;
@@ -343,14 +292,11 @@ Template.game.onRendered(function () {
     snakeParts.unshift(tail); // puts the tail as the first cell
 
     // update this player's current position on the server
-    Players.update(currentPlayer._id, {
-      $set: {
-        snakeParts: snakeParts
-      }
-    }, function () {
+    Meteor.call('playerMoved', currentPlayer._id, snakeParts, function () {
       // update this players score
-      if (food)
-        Meteor.call('playerScored', currentPlayer._id, food);
+      if (food) {
+        Meteor.call('playerScored', food);
+      }
     });
   }
 
@@ -388,22 +334,19 @@ function updateDirection(newDirection) {
         direction: newDirection
       }
     });
-  }
-  else if (newDirection == "up" && currentPlayer.direction != "down") {
+  } else if (newDirection == "up" && currentPlayer.direction != "down") {
     Players.update(currentPlayer._id, {
       $set: {
         direction: newDirection
       }
     });
-  }
-  else if (newDirection == "right" && currentPlayer.direction != "left") {
+  } else if (newDirection == "right" && currentPlayer.direction != "left") {
     Players.update(currentPlayer._id, {
       $set: {
         direction: newDirection
       }
     });
-  }
-  else if (newDirection == "down" && currentPlayer.direction != "up") {
+  } else if (newDirection == "down" && currentPlayer.direction != "up") {
     Players.update(currentPlayer._id, {
       $set: {
         direction: newDirection
@@ -411,3 +354,4 @@ function updateDirection(newDirection) {
     });
   }
 }
+

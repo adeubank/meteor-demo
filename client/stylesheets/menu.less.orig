@@ -4,6 +4,14 @@
   box-shadow: 0 0 1em white;
 }
 #start-game{
+<<<<<<< HEAD
+  position: relative;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+=======
+>>>>>>> 9f051395924af921185b4d79589b0902cee17cc5
   padding-top: 180px;
 }
 

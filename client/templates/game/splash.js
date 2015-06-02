@@ -9,7 +9,7 @@ Template.splash.onRendered(function () {
     }
   };
 
-  setCLassHeight();
+  // setCLassHeight();
 
   // focus the call to action once rendered
   $('#cto-button').focus();

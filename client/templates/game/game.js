@@ -302,12 +302,15 @@ Template.game.onRendered(function () {
     snakeParts.unshift(tail); // puts the tail as the first cell
 
     // update this player's current position on the server
-    Meteor.call('playerMoved', currentPlayer._id, snakeParts, function () {
-      // update this players score
-      if (food) {
-        Meteor.call('playerScored', food);
-      }
-    });
+    setTimeout(function () {
+      Meteor.call('playerMoved', currentPlayer._id, snakeParts, function () {
+        // update this players score
+        if (food) {
+          Meteor.call('log', currentPlayer, "ate food", food);
+          Meteor.call('playerScored', food);
+        }
+      });
+    }, 0);
   }
 
   function paintFoodCell(x, y) {

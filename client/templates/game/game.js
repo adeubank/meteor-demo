@@ -224,9 +224,9 @@ Template.game.onRendered(function () {
     var executioner = _(otherSnakeParts).find(function (otherSnakePart) {
 
       if (checkCollision(nx, ny, otherSnakePart.snakeParts)) {
-        Meteor.call("log", "collision detected with other snakepart", otherSnakePart);
+        // Meteor.call("log", "collision detected with other snakepart", otherSnakePart);
         var player =Players.findOne({ _id: otherSnakePart.playerId });
-        Meteor.call("log", "collision detected with this player", player);
+        // Meteor.call("log", "collision detected with this player", player);
         return Players.findOne({ _id: otherSnakePart.playerId });
       }
       else {
@@ -243,7 +243,7 @@ Template.game.onRendered(function () {
         }
       });
 
-      Meteor.call("log", currentPlayer.playerName, "died, killed by", executioner);
+      // Meteor.call("log", currentPlayer.playerName, "died, killed by", executioner);
 
       Meteor.call('giveKillCredit', executioner.playerId);
 
@@ -252,7 +252,7 @@ Template.game.onRendered(function () {
 
     // check whether the current player collided with it's own snake
     if (checkCollision(nx, ny, snakeParts)) {
-      Meteor.call("log", currentPlayer.playerName, "died, collision");
+      // Meteor.call("log", currentPlayer.playerName, "died, collision");
       Players.update(currentPlayer._id, {
         $set: {
           dead: true
@@ -291,7 +291,7 @@ Template.game.onRendered(function () {
       Meteor.call('playerMoved', currentPlayer._id, snakeParts, function () {
         // update this players score
         if (food) {
-          Meteor.call('log', currentPlayer, "ate food", food);
+          // Meteor.call("log", currentPlayer, "ate food", food);
           Meteor.call('playerScored', food);
         }
       });

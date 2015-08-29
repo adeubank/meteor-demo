@@ -237,8 +237,18 @@ Template.game.onRendered(function () {
 
     // check for any collisions with the other players
     var executioner = _(otherSnakeParts).find(function (otherSnakePart) {
-      return checkCollision(nx, ny, otherSnakePart.snakeParts);
+
+      if (checkCollision(nx, ny, otherSnakePart.snakeParts)) {
+        Meteor.call("log", "collision detected with other snakepart", otherSnakePart);
+        var player =Players.findOne({ _id: otherSnakePart.playerId });
+        Meteor.call("log", "collision detected with this player", player);
+        return Players.findOne({ _id: otherSnakePart.playerId });
+      }
+      else {
+        return false;
+      }
     });
+
 
     if (executioner) {
       // mark player as dead
@@ -248,16 +258,16 @@ Template.game.onRendered(function () {
         }
       });
 
-      console.log(currentPlayer.playerName, "died, killed by", executioner.playerName);
+      Meteor.call("log", currentPlayer.playerName, "died, killed by", executioner);
 
-      Meteor.call('giveKillCredit', executioner._id);
+      Meteor.call('giveKillCredit', executioner.playerId);
 
       return;
     }
 
     // check whether the current player collided with it's own snake
     if (checkCollision(nx, ny, snakeParts)) {
-      console.log(currentPlayer.playerName, "died, collision");
+      Meteor.call("log", currentPlayer.playerName, "died, collision");
       Players.update(currentPlayer._id, {
         $set: {
           dead: true

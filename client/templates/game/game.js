@@ -27,6 +27,8 @@ Template.game.events({
       dead: true
     });
     if (deadPlayer) {
+      // bind the swipe control now that player is alive
+      $(document).on('touchmove.game', '#js-game-board', touchMove);
       Meteor.call('resurrectPlayer', deadPlayer._id);
     } else {
       Router.go('menu');
@@ -39,27 +41,6 @@ Template.game.events({
       x: changedTouches.pageX,
       y: changedTouches.pageY
     };
-  },
-
-  'touchmove #js-game-board': function (event) {
-    event.preventDefault();
-
-    var changedTouches = event.originalEvent.changedTouches[0];
-    var dX = changedTouches.pageX - touchCoords.x;
-    var dY = changedTouches.pageY - touchCoords.y;
-    var threshold = 50;
-    var restraint = 25;
-    var swipeDir;
-
-    if (Math.abs(dX) >= threshold && Math.abs(dY) <= restraint) { // 2nd condition for horizontal swipe met
-      swipeDir = (dX < 0) ? 'left' : 'right'; // if dist traveled is negative, it indicates left swipe
-    } else if (Math.abs(dY) >= threshold && Math.abs(dX) <= restraint) { // 2nd condition for vertical swipe met
-      swipeDir = (dY < 0) ? 'up' : 'down'; // if dist traveled is negative, it indicates up swipe
-    }
-
-    if (swipeDir) {
-      updateDirection(swipeDir);
-    }
   },
 
   'touchend #js-game-board': function (event, template) {
@@ -105,6 +86,8 @@ Template.game.onCreated(function () {
       // allow space to resurrect player
       if (key == "32") {
         Meteor.call('resurrectPlayer', Session.get('currentPlayer'));
+        // bind the swipe control now that player is alive
+        $(document).on('touchmove.game', '#js-game-board', touchMove);
         return false;
       }
 
@@ -202,6 +185,8 @@ Template.game.onRendered(function () {
 
     if (currentPlayer.dead && !Session.get('firstStart')) {
       Session.set('gameMessages', "You died :(");
+      // turn off swipe controls
+      $(document).off('touchmove.game');
       return;
     }
 
@@ -368,3 +353,23 @@ function updateDirection(newDirection) {
   }
 }
 
+function touchMove(event) {
+  event.preventDefault();
+
+  var changedTouches = event.originalEvent.changedTouches[0];
+  var dX = changedTouches.pageX - touchCoords.x;
+  var dY = changedTouches.pageY - touchCoords.y;
+  var threshold = 50;
+  var restraint = 25;
+  var swipeDir;
+
+  if (Math.abs(dX) >= threshold && Math.abs(dY) <= restraint) { // 2nd condition for horizontal swipe met
+    swipeDir = (dX < 0) ? 'left' : 'right'; // if dist traveled is negative, it indicates left swipe
+  } else if (Math.abs(dY) >= threshold && Math.abs(dX) <= restraint) { // 2nd condition for vertical swipe met
+    swipeDir = (dY < 0) ? 'up' : 'down'; // if dist traveled is negative, it indicates up swipe
+  }
+
+  if (swipeDir) {
+    updateDirection(swipeDir);
+  }
+}
